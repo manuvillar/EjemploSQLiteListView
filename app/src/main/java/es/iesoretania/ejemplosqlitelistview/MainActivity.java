@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -24,108 +23,147 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void Registrar(View view) {
-        AdminSQLiteOpenHelper admin = new AdminSQLiteOpenHelper(this, "administracion", null, 1);
+        // Crear una instancia de AdminSQLiteOpenHelper
+        AdminSQLiteOpenHelper admin = new AdminSQLiteOpenHelper(this,
+                "administracion", null, 1);
         SQLiteDatabase BaseDeDatos = admin.getWritableDatabase();
 
+        // Obtener los valores de los campos de entrada
         String codigo = binding.etCodigo.getText().toString();
         String producto = binding.etProducto.getText().toString();
         String precio = binding.etPrecio.getText().toString();
 
-        if (!codigo.isEmpty() && !producto.isEmpty() && !precio.isEmpty()){
-            ContentValues registro = new ContentValues();
+        // Validar que los campos no estén vacíos
+        if (!codigo.isEmpty() && !producto.isEmpty() && !precio.isEmpty()) {
+            try {
+                // Intentar convertir los valores a enteros y decimales
+                int codigoInt = Integer.parseInt(codigo);
+                double precioDouble = Double.parseDouble(precio);
 
-            registro.put("codigo",codigo);
-            registro.put("producto",producto);
-            registro.put("precio",precio);
+                // Crear un objeto ContentValues para almacenar los valores
+                ContentValues registro = new ContentValues();
+                registro.put("codigo", codigoInt);
+                registro.put("producto", producto);
+                registro.put("precio", precioDouble);
 
-            BaseDeDatos.insert("articulos", null, registro);
+                // Insertar el registro en la base de datos
+                BaseDeDatos.insert("articulos", null, registro);
 
-            BaseDeDatos.close();
+                // Limpiar los campos de entrada
+                binding.etCodigo.setText("");
+                binding.etProducto.setText("");
+                binding.etPrecio.setText("");
 
-            binding.etCodigo.setText("");
-            binding.etProducto.setText("");
-            binding.etPrecio.setText("");
-
-            Toast.makeText(this, "Producto guardado correctamente", Toast.LENGTH_SHORT).show();
-        } else{
+                Toast.makeText(this, "Producto guardado correctamente", Toast.LENGTH_SHORT).show();
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Código y precio deben ser numéricos", Toast.LENGTH_SHORT).show();
+            } finally {
+                BaseDeDatos.close();
+            }
+        } else {
             Toast.makeText(this, "Debes introducir todos los campos", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void Buscar(View view) {
-        AdminSQLiteOpenHelper admin = new AdminSQLiteOpenHelper(this, "administracion", null, 1);
+        // Crear una instancia de AdminSQLiteOpenHelper
+        AdminSQLiteOpenHelper admin = new AdminSQLiteOpenHelper(this,
+                "administracion", null, 1);
         SQLiteDatabase BaseDeDatos = admin.getReadableDatabase();
 
+        // Obtener el valor del campo de entrada
         String codigo = binding.etCodigo.getText().toString();
 
-        if (!codigo.isEmpty()){
-            Cursor fila =BaseDeDatos.rawQuery
-                    ("select producto, precio from articulos where codigo ="+codigo, null);
+        // Validar que el campo no esté vacío
+        if (!codigo.isEmpty()) {
+            // Realizar la consulta a la base de datos
+            Cursor fila = BaseDeDatos.rawQuery("SELECT producto, precio FROM articulos WHERE codigo = ?",
+                    new String[]{codigo});
 
-            if (fila.moveToFirst()){
+            // Procesar el resultado de la consulta
+            if (fila.moveToFirst()) {
                 binding.etProducto.setText(fila.getString(0));
                 binding.etPrecio.setText(fila.getString(1));
-
-                BaseDeDatos.close();
-            } else{
+            } else {
                 Toast.makeText(this, "No existe el producto", Toast.LENGTH_SHORT).show();
             }
-        } else{
+            fila.close();
+            BaseDeDatos.close();
+        } else {
             Toast.makeText(this, "Debes introducir el código del producto", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void Modificar(View view) {
-        AdminSQLiteOpenHelper admin = new AdminSQLiteOpenHelper(this, "administracion", null, 1);
+        // Crear una instancia de AdminSQLiteOpenHelper
+        AdminSQLiteOpenHelper admin = new AdminSQLiteOpenHelper(this,
+                "administracion", null, 1);
         SQLiteDatabase BaseDeDatos = admin.getWritableDatabase();
 
+        // Obtener los valores de los campos de entrada
         String codigo = binding.etCodigo.getText().toString();
         String producto = binding.etProducto.getText().toString();
         String precio = binding.etPrecio.getText().toString();
 
-        if (!codigo.isEmpty() && !producto.isEmpty() && !precio.isEmpty()){
-            ContentValues registro = new ContentValues();
+        // Validar que los campos no estén vacíos
+        if (!codigo.isEmpty() && !producto.isEmpty() && !precio.isEmpty()) {
+            try {
+                // Intentar convertir los valores a enteros y decimales
+                int codigoInt = Integer.parseInt(codigo);
+                double precioDouble = Double.parseDouble(precio);
 
-            registro.put("codigo",codigo);
-            registro.put("producto",producto);
-            registro.put("precio",precio);
+                // Crear un objeto ContentValues para almacenar los valores
+                ContentValues registro = new ContentValues();
+                registro.put("producto", producto);
+                registro.put("precio", precioDouble);
 
-            int cantidad = BaseDeDatos.update("articulos", registro, "codigo="+codigo, null);
+                // Actualizar el registro en la base de datos
+                int cantidad = BaseDeDatos.update("articulos", registro,
+                        "codigo = ?", new String[]{String.valueOf(codigoInt)});
 
-            BaseDeDatos.close();
 
-            if (cantidad ==1){
-                Toast.makeText(this, "Registro modificado correctamente", Toast.LENGTH_SHORT).show();
-            } else{
-                Toast.makeText(this, "No existe el producto", Toast.LENGTH_SHORT).show();
+                if (cantidad == 1) {
+                    Toast.makeText(this, "Registro modificado correctamente", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "No existe el producto", Toast.LENGTH_SHORT).show();
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Código y precio deben ser numéricos", Toast.LENGTH_SHORT).show();
+            } finally {
+                BaseDeDatos.close();
             }
-        } else{
+        } else {
             Toast.makeText(this, "Debes introducir todos los campos", Toast.LENGTH_SHORT).show();
         }
     }
 
     public void Eliminar(View view) {
-        AdminSQLiteOpenHelper admin = new AdminSQLiteOpenHelper(this, "administracion", null, 1);
+        // Crear una instancia de AdminSQLiteOpenHelper
+        AdminSQLiteOpenHelper admin = new AdminSQLiteOpenHelper(this,
+                "administracion", null, 1);
         SQLiteDatabase BaseDeDatos = admin.getWritableDatabase();
 
+        // Obtener el valor del campo de entrada
         String codigo = binding.etCodigo.getText().toString();
 
-        if (!codigo.isEmpty()){
-            int cantidad = BaseDeDatos.delete("articulos", "codigo="+codigo, null);
+        // Validar que el campo no esté vacío
+        if (!codigo.isEmpty()) {
+            // Eliminar el registro de la base de datos
+            int cantidad = BaseDeDatos.delete("articulos", "codigo = ?", new String[]{codigo});
 
-            BaseDeDatos.close();
-
-            if (cantidad ==1){
+            if (cantidad == 1) {
                 Toast.makeText(this, "Registro eliminado correctamente", Toast.LENGTH_SHORT).show();
-            } else{
+            } else {
                 Toast.makeText(this, "No existe el producto", Toast.LENGTH_SHORT).show();
             }
-        }  else{
-            Toast.makeText(this, "Debes introducir todos los campos", Toast.LENGTH_SHORT).show();
+            BaseDeDatos.close();
+        } else {
+            Toast.makeText(this, "Debes introducir el código del producto", Toast.LENGTH_SHORT).show();
         }
     }
 
-    public void Listar (View view){
+    public void Listar(View view) {
+        // Crear un Intent para iniciar la actividad ListaActivity
         Intent intent = new Intent(this, ListaActivity.class);
         startActivity(intent);
     }

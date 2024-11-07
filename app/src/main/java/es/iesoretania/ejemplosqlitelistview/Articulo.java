@@ -1,21 +1,21 @@
 package es.iesoretania.ejemplosqlitelistview;
 
 public class Articulo {
-    String codigo;
+    int codigo;
     String producto;
-    String precio;
+    double precio;
 
-    public Articulo(String codigo, String producto, String precio) {
+    public Articulo(int codigo, String producto, double precio) {
         this.codigo = codigo;
         this.producto = producto;
         this.precio = precio;
     }
 
-    public String getCodigo() {
+    public int getCodigo() {
         return codigo;
     }
 
-    public void setCodigo(String codigo) {
+    public void setCodigo(int codigo) {
         this.codigo = codigo;
     }
 
@@ -27,11 +27,18 @@ public class Articulo {
         this.producto = producto;
     }
 
-    public String getPrecio() {
+    public double getPrecio() {
         return precio;
     }
 
-    public void setPrecio(String precio) {
+    public void setPrecio(double precio) {
         this.precio = precio;
     }
+
+    @Override
+    public String toString() {
+        return "Codigo: " + codigo + ", Producto: " + producto + ", Precio: " + precio;
+    }
+
 }
+
